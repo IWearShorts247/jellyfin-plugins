@@ -4,10 +4,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 export PATH="$HOME/.dotnet:$PATH" DOTNET_CLI_TELEMETRY_OPTOUT=1
 VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' src/Jellyfin.Plugin.Showtime/Jellyfin.Plugin.Showtime.csproj)
-TARGET_ABI=10.11.8.0
+TARGET_ABI=12.0.0.0
 dotnet build src/Jellyfin.Plugin.Showtime -c Release --nologo -v q
 rm -rf dist/stage && mkdir -p dist/stage
-cp src/Jellyfin.Plugin.Showtime/bin/Release/net9.0/Jellyfin.Plugin.Showtime.dll dist/stage/
+cp src/Jellyfin.Plugin.Showtime/bin/Release/net10.0/Jellyfin.Plugin.Showtime.dll dist/stage/
 cat > dist/stage/meta.json <<JSON
 {
   "category": "General",

@@ -1,6 +1,6 @@
 # Showtime
 
-A CinemaVision-style pre-show for Jellyfin 10.11. Before a movie, cinema-mode clients play a sequence you design:
+A CinemaVision-style pre-show for Jellyfin 12.x. Before a movie, cinema-mode clients play a sequence you design:
 trivia reel → trailers → bumpers → rating card → audio-format bumper → feature, with HTTP light cues (e.g. Home Assistant) along the way.
 
 ## How it works
@@ -38,7 +38,8 @@ Showtime/
 Manual install: unzip into `<jellyfin data>/plugins/Showtime_<ver>/` (e.g. `/var/lib/jellyfin/plugins/` or `/config/data/plugins/` in Docker) and restart Jellyfin.
 Or host the zip somewhere the server can reach, set `SHOWTIME_ZIP_URL` before building, and add `manifest.json`'s URL under Dashboard → Plugins → Repositories.
 
-Targets Jellyfin 10.11.x (.NET 9). Jellyfin 12.x needs a rebuild against its packages (.NET 10).
+Targets Jellyfin 12.x (.NET 10, built against 12.2.0). The last 10.11 build is git tag `v0.1.0-jf10.11`.
+Note Jellyfin 12 only accepts `Authorization: MediaBrowser Token="…"` — the old `X-Emby-Token` header and `?api_key=` are gone.
 
 ## Limits
 

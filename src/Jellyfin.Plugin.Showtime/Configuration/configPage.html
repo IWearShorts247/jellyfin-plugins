@@ -47,6 +47,13 @@
         .showtimePage table.st-table td, .showtimePage table.st-table th { text-align: left; padding: .45em .6em; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
         .showtimePage table.st-table th { font-weight: 500; opacity: .6; font-size: .85em; }
         .showtimePage code { background: rgba(255,255,255,.08); padding: .1em .35em; border-radius: 3px; }
+        .showtimePage .st-step-body { min-width: 0; }
+        .showtimePage .st-row > *, .showtimePage .st-field > * { min-width: 0; }
+        .showtimePage .st-field select, .showtimePage .st-field input { max-width: 100%; box-sizing: border-box; }
+        @media (max-width: 640px) {
+            .showtimePage .st-step { grid-template-columns: 1.5em minmax(0, 1fr); }
+            .showtimePage .st-step-tools { grid-column: 1 / -1; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,.08); padding-top: .3em; }
+        }
         .showtimePage .st-savebar { position: sticky; bottom: 0; padding: 1em 0; background: inherit; display: flex; gap: 1em; align-items: center; }
     </style>
     <div data-role="content">
@@ -66,7 +73,7 @@
             <div class="st-panel active" data-panel="sequences">
                 <div class="st-row">
                     <div class="st-field"><label>Sequence</label><select id="stSequence"></select></div>
-                    <div class="st-field" style="flex:0 0 auto; flex-direction: row; gap: .4em;">
+                    <div class="st-field" style="flex:0 1 auto; flex-direction: row; flex-wrap: wrap; gap: .4em;">
                         <button is="emby-button" type="button" class="raised" id="stSeqNew">New</button>
                         <button is="emby-button" type="button" class="raised" id="stSeqCopy">Duplicate</button>
                         <button is="emby-button" type="button" class="raised" id="stSeqDelete">Delete</button>

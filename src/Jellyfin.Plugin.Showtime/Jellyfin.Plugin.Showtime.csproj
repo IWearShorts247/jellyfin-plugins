@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Jellyfin.Plugin.Showtime</RootNamespace>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -13,9 +13,9 @@
 
   <ItemGroup>
     <!-- Provided by the server at runtime; never copy into the plugin folder. -->
-    <PackageReference Include="Jellyfin.Controller" Version="10.11.8" ExcludeAssets="runtime" />
-    <PackageReference Include="Jellyfin.Model" Version="10.11.8" ExcludeAssets="runtime" />
-    <PackageReference Include="SkiaSharp" Version="3.116.1" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Jellyfin.Controller" Version="12.2.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Jellyfin.Model" Version="12.2.0" ExcludeAssets="runtime" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" ExcludeAssets="runtime" PrivateAssets="all" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
