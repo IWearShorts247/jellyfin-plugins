@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Showtime</title>
+</head>
+<body>
+<div id="showtimePage" data-role="page" class="page type-interior pluginConfigurationPage showtimePage"
+     data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea" data-controller="__plugin/showtimejs">
+    <style>
+        .showtimePage .st-tabs { display: flex; gap: .5em; margin: 1em 0 1.5em; flex-wrap: wrap; }
+        .showtimePage .st-tab { background: none; border: 1px solid rgba(255,255,255,.18); color: inherit; padding: .5em 1.2em; border-radius: 999px; cursor: pointer; font: inherit; }
+        .showtimePage .st-tab.active { background: #00a4dc; border-color: #00a4dc; color: #fff; }
+        .showtimePage .st-panel { display: none; }
+        .showtimePage .st-panel.active { display: block; }
+        .showtimePage .st-row { display: flex; gap: 1em; flex-wrap: wrap; align-items: flex-end; }
+        .showtimePage .st-row > * { flex: 1 1 14em; }
+        .showtimePage .st-field { display: flex; flex-direction: column; gap: .3em; margin-bottom: 1em; }
+        .showtimePage .st-field label { font-size: .85em; opacity: .7; }
+        .showtimePage .st-field input, .showtimePage .st-field select, .showtimePage .st-field textarea {
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: inherit; border-radius: 4px; padding: .55em .7em; font: inherit; }
+        .showtimePage .st-field select option { background: #202020; }
+        .showtimePage .st-field textarea { min-height: 4.5em; font-family: monospace; font-size: .9em; }
+        .showtimePage .st-check { display: flex; align-items: center; gap: .5em; margin-bottom: 1em; cursor: pointer; }
+        .showtimePage .st-steps { list-style: none; padding: 0; margin: 0 0 1em; counter-reset: step; }
+        .showtimePage .st-step { display: grid; grid-template-columns: 2em 1fr auto; gap: .8em; align-items: start; padding: .8em 1em; margin-bottom: .5em;
+            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09); border-left: 4px solid var(--st-color, #888); border-radius: 6px; }
+        .showtimePage .st-step.disabled { opacity: .45; }
+        .showtimePage .st-step.dragging { opacity: .3; }
+        .showtimePage .st-step.after-feature { opacity: .35; }
+        .showtimePage .st-num { counter-increment: step; font-weight: 600; opacity: .6; cursor: grab; padding-top: .5em; user-select: none; }
+        .showtimePage .st-num::before { content: counter(step); }
+        .showtimePage .st-step-body .st-row > * { flex: 1 1 10em; }
+        .showtimePage .st-step-body .st-field { margin-bottom: .4em; }
+        .showtimePage .st-step-title { font-weight: 600; margin-bottom: .5em; }
+        .showtimePage .st-step-tools { display: flex; gap: .2em; }
+        .showtimePage .st-icon { background: none; border: none; color: inherit; cursor: pointer; opacity: .7; font-size: 1.1em; padding: .3em .45em; border-radius: 4px; }
+        .showtimePage .st-icon:hover { opacity: 1; background: rgba(255,255,255,.1); }
+        .showtimePage .st-card { padding: 1em 1.2em; margin-bottom: 1em; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09); border-radius: 6px; }
+        .showtimePage .st-muted { opacity: .65; font-size: .9em; }
+        .showtimePage .st-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: .6em; margin: 1em 0; }
+        .showtimePage .st-stat { padding: .7em 1em; background: rgba(255,255,255,.04); border-radius: 6px; }
+        .showtimePage .st-stat b { display: block; font-size: 1.5em; }
+        .showtimePage .st-results button { display: block; width: 100%; text-align: left; background: none; border: none; color: inherit; padding: .5em .7em; cursor: pointer; border-radius: 4px; font: inherit; }
+        .showtimePage .st-results button:hover { background: rgba(255,255,255,.08); }
+        .showtimePage table.st-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+        .showtimePage table.st-table td, .showtimePage table.st-table th { text-align: left; padding: .45em .6em; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
+        .showtimePage table.st-table th { font-weight: 500; opacity: .6; font-size: .85em; }
+        .showtimePage code { background: rgba(255,255,255,.08); padding: .1em .35em; border-radius: 3px; }
+        .showtimePage .st-savebar { position: sticky; bottom: 0; padding: 1em 0; background: inherit; display: flex; gap: 1em; align-items: center; }
+    </style>
+    <div data-role="content">
+        <div class="content-primary">
+            <h2 class="sectionTitle">Showtime</h2>
+            <p class="st-muted">Pre-show sequences in the spirit of CinemaVision. Clients play these before a feature when
+                <em>Settings → Playback → Cinema mode</em> is on.</p>
+
+            <div class="st-tabs">
+                <button type="button" class="st-tab active" data-tab="sequences">Sequences</button>
+                <button type="button" class="st-tab" data-tab="content">Content</button>
+                <button type="button" class="st-tab" data-tab="actions">Actions</button>
+                <button type="button" class="st-tab" data-tab="preview">Preview</button>
+            </div>
+
+            <!-- Sequences -->
+            <div class="st-panel active" data-panel="sequences">
+                <div class="st-row">
+                    <div class="st-field"><label>Sequence</label><select id="stSequence"></select></div>
+                    <div class="st-field" style="flex:0 0 auto; flex-direction: row; gap: .4em;">
+                        <button is="emby-button" type="button" class="raised" id="stSeqNew">New</button>
+                        <button is="emby-button" type="button" class="raised" id="stSeqCopy">Duplicate</button>
+                        <button is="emby-button" type="button" class="raised" id="stSeqDelete">Delete</button>
+                    </div>
+                </div>
+                <div id="stSeqEditor">
+                    <div class="st-row">
+                        <div class="st-field"><label>Name</label><input id="stSeqName" type="text"></div>
+                        <div class="st-field"><label>Only for genres (comma separated, blank = any)</label><input id="stSeqGenres" type="text" placeholder="Horror, Thriller"></div>
+                        <div class="st-field"><label>Only for users (blank = everyone)</label><input id="stSeqUsers" type="text"></div>
+                    </div>
+                    <div class="st-row">
+                        <label class="st-check"><input type="checkbox" id="stSeqEnabled"> Enabled</label>
+                        <label class="st-check"><input type="checkbox" id="stSeqEpisodes"> Also before TV episodes</label>
+                        <div class="st-field"><label>When the feature stops, fire</label><select id="stSeqEnd" class="st-action-select"></select></div>
+                    </div>
+                    <p class="st-muted">Drag steps by their number to reorder. Steps with nothing to play are skipped. A sequence with genres or users set takes priority over a catch-all.</p>
+                    <ol class="st-steps" id="stSteps"></ol>
+                    <div class="st-row" style="max-width: 32em;">
+                        <div class="st-field"><label>Add step</label>
+                            <select id="stAddType">
+                                <option value="Bumper">Video bumper</option>
+                                <option value="Trivia">Trivia reel</option>
+                                <option value="Trailers">Trailers</option>
+                                <option value="Rating">Rating card</option>
+                                <option value="AudioFormat">Audio format bumper</option>
+                                <option value="Feature">Feature (marker)</option>
+                            </select>
+                        </div>
+                        <div class="st-field" style="flex: 0 0 auto;"><button is="emby-button" type="button" class="raised" id="stAddStep">Add</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="st-panel" data-panel="content">
+                <div class="st-field"><label>Content library</label><select id="stLibrary"></select>
+                    <span class="st-muted">A "Home Videos" library is best (no movie metadata lookups). Lay it out like CinemaVision:
+                        <code>Video Bumpers/&lt;Category&gt;</code>, <code>Ratings Bumpers/MPAA/PG-13.mp4</code>,
+                        <code>Audio Format Bumpers/Dolby Atmos</code>, <code>Trailers</code>, <code>Trivia</code>, <code>Music</code>.</span>
+                </div>
+                <div class="st-stats" id="stStats"></div>
+                <h3>Trivia reels</h3>
+                <p class="st-muted">Reels are rendered by the scheduled task <em>Showtime → Render trivia reels</em> (nightly at 4 am) into the content library.
+                    Slide packs use CinemaVision naming: <code>Name_q.jpg</code>, <code>Name_c1.jpg</code>, <code>Name_a.jpg</code>; any other image is a standalone slide.</p>
+                <div class="st-row">
+                    <div class="st-field"><label>Slide folder (blank = &lt;library&gt;/Trivia)</label><input id="stTriviaSource" type="text"></div>
+                    <div class="st-field"><label>Music folder (blank = &lt;library&gt;/Music)</label><input id="stMusic" type="text"></div>
+                    <div class="st-field"><label>Reel output (blank = &lt;library&gt;/Trivia Reels)</label><input id="stReelPath" type="text"></div>
+                </div>
+                <div class="st-row">
+                    <div class="st-field"><label>Reels</label><input id="stReelCount" type="number" min="1" max="50"></div>
+                    <div class="st-field"><label>Minutes per reel</label><input id="stReelMinutes" type="number" min="1" max="60"></div>
+                    <div class="st-field"><label>Question seconds</label><input id="stQSec" type="number" min="2" max="60"></div>
+                    <div class="st-field"><label>Clue seconds</label><input id="stCSec" type="number" min="2" max="60"></div>
+                    <div class="st-field"><label>Answer seconds</label><input id="stASec" type="number" min="2" max="60"></div>
+                </div>
+                <label class="st-check"><input type="checkbox" id="stGenerate"> Also write trivia from my movie library (taglines, directors, release years, co-stars)</label>
+                <button is="emby-button" type="button" class="raised" id="stRender">Save &amp; render reels now</button>
+                <span class="st-muted" id="stRenderStatus"></span>
+            </div>
+
+            <!-- Actions -->
+            <div class="st-panel" data-panel="actions">
+                <p class="st-muted">HTTP requests fired when a step starts (pick them on each step). For Home Assistant, make an automation with a
+                    <em>Webhook</em> trigger and use <code>POST https://&lt;your-ha&gt;/api/webhook/&lt;id&gt;</code>. Placeholders:
+                    <code>{feature}</code> <code>{rating}</code> <code>{user}</code> <code>{step}</code> <code>{device}</code>.</p>
+                <div id="stActions"></div>
+                <button is="emby-button" type="button" class="raised" id="stAddAction">Add action</button>
+            </div>
+
+            <!-- Preview -->
+            <div class="st-panel" data-panel="preview">
+                <p class="st-muted">See exactly what you'd get before a movie, using saved settings. Picks are random, so run it twice.</p>
+                <div class="st-field"><label>Movie</label><input id="stSearch" type="search" placeholder="Start typing a title…"></div>
+                <div class="st-results" id="stResults"></div>
+                <div id="stPreview"></div>
+            </div>
+
+            <div class="st-savebar">
+                <button is="emby-button" type="button" class="raised button-submit block" id="stSave" style="max-width: 14em;"><span>Save</span></button>
+                <span class="st-muted" id="stDirty"></span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
