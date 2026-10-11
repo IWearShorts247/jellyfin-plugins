@@ -148,8 +148,12 @@ export default function (view) {
 
     async function renderContent() {
         const folders = await ApiClient.getVirtualFolders();
+        // Key on the library name: Jellyfin 12 omits ItemId for libraries it hasn't paired with a database folder.
+        const isCurrent = f => config.ContentLibraryName
+            ? f.Name.toLowerCase() === config.ContentLibraryName.toLowerCase()
+            : !!f.ItemId && f.ItemId === config.ContentLibraryId;
         $('#stLibrary').innerHTML = '<option value="">— none —</option>' + folders
-            .map(f => `<option value="${f.ItemId}" ${f.ItemId === config.ContentLibraryId ? 'selected' : ''}>${esc(f.Name)} (${esc(f.CollectionType || 'mixed')})</option>`)
+            .map(f => `<option value="${esc(f.Name)}" data-id="${esc(f.ItemId || '')}" ${isCurrent(f) ? 'selected' : ''}>${esc(f.Name)} (${esc(f.CollectionType || 'mixed')})</option>`)
             .join('');
         $('#stTriviaSource').value = config.TriviaSourcePath || '';
         $('#stMusic').value = config.MusicPath || '';
@@ -163,7 +167,9 @@ export default function (view) {
     }
 
     function readContent() {
-        config.ContentLibraryId = $('#stLibrary').value;
+        const lib = $('#stLibrary').selectedOptions[0];
+        config.ContentLibraryName = lib ? lib.value : '';
+        config.ContentLibraryId = lib ? lib.dataset.id : '';
         config.TriviaSourcePath = $('#stTriviaSource').value.trim();
         config.MusicPath = $('#stMusic').value.trim();
         config.TriviaReelPath = $('#stReelPath').value.trim();

@@ -45,7 +45,7 @@ public class ShowtimeController : ControllerBase
 
         return new
         {
-            Library = _content.GetLibrary()?.Name,
+            Library = _content.GetLibraryName(),
             Root = _content.GetLibraryRoot(),
             Total = videos.Count,
             Categories = BumperCategories.Concat(bumperFolders).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(c => c).ToArray(),

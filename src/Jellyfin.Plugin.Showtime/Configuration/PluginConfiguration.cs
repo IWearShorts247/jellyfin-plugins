@@ -120,7 +120,10 @@ public class ActionDefinition
 /// </summary>
 public class PluginConfiguration : BasePluginConfiguration
 {
-    /// <summary>Item id of the library holding bumpers, ratings cards, trailers and trivia reels.</summary>
+    /// <summary>Name of the library holding bumpers, ratings cards, trailers and trivia reels (as listed under Libraries).</summary>
+    public string ContentLibraryName { get; set; } = string.Empty;
+
+    /// <summary>Item id of that library. Only a fallback: Jellyfin 12 doesn't always report library ids.</summary>
     public string ContentLibraryId { get; set; } = string.Empty;
 
     /// <summary>Folder of trivia slide images (CinemaVision layout). Empty = "&lt;content library&gt;/Trivia".</summary>

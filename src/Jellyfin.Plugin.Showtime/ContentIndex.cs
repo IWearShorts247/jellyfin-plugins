@@ -1,6 +1,7 @@
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.Showtime;
@@ -59,31 +60,62 @@ public class ContentIndex
     public static string Normalize(string s)
         => new string(s.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
-    /// <summary>The content library's folder, if configured.</summary>
-    public Folder? GetLibrary()
+    /// <summary>
+    /// The configured content library as Jellyfin lists it under Libraries. Matched by name first, because 12.x
+    /// leaves <c>ItemId</c> empty whenever it can't pair a library with its database folder (e.g. before a first scan).
+    /// </summary>
+    public VirtualFolderInfo? GetVirtualFolder()
     {
-        var id = Plugin.Instance?.Configuration.ContentLibraryId;
-        if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out var guid))
+        var config = Plugin.Instance?.Configuration;
+        if (config is null)
         {
             return null;
         }
 
-        return _libraryManager.GetItemById(guid) as Folder;
-    }
-
-    /// <summary>The media folders of the content library, as configured under Libraries.</summary>
-    public string[] GetLibraryPaths()
-    {
-        var library = GetLibrary();
-        if (library is null)
+        var folders = _libraryManager.GetVirtualFolders();
+        if (!string.IsNullOrWhiteSpace(config.ContentLibraryName))
         {
-            return Array.Empty<string>();
+            var byName = folders.FirstOrDefault(f => string.Equals(f.Name, config.ContentLibraryName, StringComparison.OrdinalIgnoreCase));
+            if (byName is not null)
+            {
+                return byName;
+            }
         }
 
-        var id = library.Id.ToString("N");
-        var folder = _libraryManager.GetVirtualFolders().FirstOrDefault(f => string.Equals(f.ItemId, id, StringComparison.OrdinalIgnoreCase));
-        return folder?.Locations ?? Array.Empty<string>();
+        // Configs saved by 0.1/0.2 only have the id.
+        if (Guid.TryParse(config.ContentLibraryId, out var guid))
+        {
+            var id = guid.ToString("N");
+            return folders.FirstOrDefault(f => string.Equals(f.ItemId, id, StringComparison.OrdinalIgnoreCase))
+                ?? folders.FirstOrDefault(f => string.Equals(f.Name, _libraryManager.GetItemById(guid)?.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return null;
     }
+
+    /// <summary>The library's database folder, if Jellyfin has one for it.</summary>
+    public Folder? GetLibrary()
+    {
+        var folder = GetVirtualFolder();
+        if (folder is null)
+        {
+            return null;
+        }
+
+        if (Guid.TryParse(folder.ItemId, out var id) && _libraryManager.GetItemById(id) is Folder byId)
+        {
+            return byId;
+        }
+
+        var children = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+        return children.FirstOrDefault(c => string.Equals(System.IO.Path.GetFileName(c.Path), folder.Name, StringComparison.OrdinalIgnoreCase))
+            ?? children.FirstOrDefault(c => string.Equals(c.Name, folder.Name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public string? GetLibraryName() => GetVirtualFolder()?.Name;
+
+    /// <summary>The media folders of the content library, as configured under Libraries.</summary>
+    public string[] GetLibraryPaths() => GetVirtualFolder()?.Locations ?? Array.Empty<string>();
 
     /// <summary>The first media folder of the content library.</summary>
     public string? GetLibraryRoot() => GetLibraryPaths().FirstOrDefault();
@@ -98,7 +130,7 @@ public class ContentIndex
 
     public IReadOnlyList<ContentVideo> GetVideos()
     {
-        var libraryId = Plugin.Instance?.Configuration.ContentLibraryId ?? string.Empty;
+        var libraryId = (Plugin.Instance?.Configuration.ContentLibraryName ?? string.Empty) + "|" + (Plugin.Instance?.Configuration.ContentLibraryId ?? string.Empty);
         lock (_lock)
         {
             if (_builtFor == libraryId && DateTime.UtcNow - _builtUtc < CacheLifetime)
@@ -131,23 +163,35 @@ public class ContentIndex
 
     private List<ContentVideo> Build()
     {
-        var library = GetLibrary();
-        if (library is null)
+        var roots = GetLibraryPaths()
+            .Select(p => p.TrimEnd('/', '\\') + System.IO.Path.DirectorySeparatorChar)
+            .ToArray();
+        if (roots.Length == 0)
         {
             return new List<ContentVideo>();
         }
 
-        var roots = GetLibraryPaths()
-            .Select(p => p.TrimEnd('/', '\\') + System.IO.Path.DirectorySeparatorChar)
-            .ToArray();
-
-        var items = _libraryManager.GetItemList(new InternalItemsQuery
+        var query = new InternalItemsQuery
         {
-            AncestorIds = new[] { library.Id },
             Recursive = true,
             IncludeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Movie, BaseItemKind.MusicVideo, BaseItemKind.Trailer },
             IsVirtualItem = false,
-        });
+        };
+
+        var library = GetLibrary();
+        IReadOnlyList<BaseItem> items = Array.Empty<BaseItem>();
+        if (library is not null)
+        {
+            query.AncestorIds = new[] { library.Id };
+            items = _libraryManager.GetItemList(query);
+        }
+
+        if (items.Count == 0)
+        {
+            // No usable library folder: fall back to every video on the server, filtered by path below.
+            query.AncestorIds = Array.Empty<Guid>();
+            items = _libraryManager.GetItemList(query);
+        }
 
         var result = new List<ContentVideo>(items.Count);
         foreach (var item in items)
@@ -172,7 +216,7 @@ public class ContentIndex
             result.Add(new ContentVideo(item, relative[..^1], relative[^1]));
         }
 
-        _logger.LogInformation("Showtime indexed {Count} videos in content library {Library}", result.Count, library.Name);
+        _logger.LogInformation("Showtime indexed {Count} videos in content library {Library} ({Roots})", result.Count, GetLibraryName(), string.Join(", ", roots));
         return result;
     }
 }
