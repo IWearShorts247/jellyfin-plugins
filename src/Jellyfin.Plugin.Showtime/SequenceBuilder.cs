@@ -151,13 +151,14 @@ public class SequenceBuilder
             }
 
             var label = Describe(step);
+            var want3D = feature is Video { Is3D: true };
             var picked = step.Type switch
             {
-                StepType.Bumper => Pick(_content.InFolder(VideoBumpers, step.Category).Concat(_content.InFolder(step.Category.Split('/'))).Select(v => v.Item), step.Count, user, used),
+                StepType.Bumper => Pick(Fit3D(_content.InFolder(VideoBumpers, step.Category).Concat(_content.InFolder(step.Category.Split(new[] { '/', '\\' }))), want3D).Select(v => v.Item), step.Count, user, used),
                 StepType.Trivia => Pick(_content.InFolder(TriviaReels).Select(v => v.Item), step.Count, user, used),
                 StepType.Trailers => PickTrailers(step, feature, user, used),
-                StepType.Rating => PickRating(feature, plan),
-                StepType.AudioFormat => PickAudio(feature, plan),
+                StepType.Rating => PickRating(feature, plan, want3D),
+                StepType.AudioFormat => PickAudio(feature, plan, want3D),
                 _ => new List<BaseItem>(),
             };
 
@@ -276,16 +277,31 @@ public class SequenceBuilder
         return ranked.Take(window).OrderBy(_ => Random.Shared.Next()).Take(count).Select(x => x.item).ToList();
     }
 
-    private List<BaseItem> PickRating(BaseItem feature, SequencePlan plan)
+    /// <summary>
+    /// Keeps 3D-tagged clips for 3D features and plain clips for everything else. A 3D feature falls back to
+    /// plain clips when no 3D version exists.
+    /// </summary>
+    private static List<ContentVideo> Fit3D(IEnumerable<ContentVideo> candidates, bool want3D)
+    {
+        var list = candidates.ToList();
+        if (want3D && list.Any(v => v.Is3D))
+        {
+            return list.Where(v => v.Is3D).ToList();
+        }
+
+        return list.Where(v => !v.Is3D).ToList();
+    }
+
+    private List<BaseItem> PickRating(BaseItem feature, SequencePlan plan, bool want3D)
     {
         var rated = feature is Episode ep && string.IsNullOrEmpty(ep.OfficialRating) ? ep.Series : feature;
         var (system, rating) = SplitRating(rated?.OfficialRating);
         var all = _content.InFolder(RatingsBumpers).ToList();
 
-        var match = all.Where(v => v.IsUnder(RatingsBumpers, system) && ContentIndex.SameName(v.BaseName, rating)).ToList();
+        var match = Fit3D(all.Where(v => v.IsUnder(RatingsBumpers, system) && ContentIndex.SameName(v.BaseName, rating)), want3D);
         if (match.Count == 0)
         {
-            match = all.Where(v => ContentIndex.SameName(v.BaseName, rating)).ToList();
+            match = Fit3D(all.Where(v => ContentIndex.SameName(v.BaseName, rating)), want3D);
         }
 
         if (match.Count == 0)
@@ -296,7 +312,7 @@ public class SequenceBuilder
         return match.Count == 0 ? new List<BaseItem>() : new List<BaseItem> { match[Random.Shared.Next(match.Count)].Item };
     }
 
-    private List<BaseItem> PickAudio(BaseItem feature, SequencePlan plan)
+    private List<BaseItem> PickAudio(BaseItem feature, SequencePlan plan, bool want3D)
     {
         var format = DetectAudioFormat(feature);
         plan.AudioFormat = format;
@@ -307,7 +323,7 @@ public class SequenceBuilder
 
         foreach (var folder in AudioFallbacks[format])
         {
-            var matches = _content.InFolder(AudioFormatBumpers, folder).ToList();
+            var matches = Fit3D(_content.InFolder(AudioFormatBumpers, folder), want3D);
             if (matches.Count > 0)
             {
                 if (!ContentIndex.SameName(folder, format))

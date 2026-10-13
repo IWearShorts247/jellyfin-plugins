@@ -15,6 +15,9 @@ public sealed record ContentVideo(BaseItem Item, string[] Folders, string FileNa
     public string BaseName { get; } = System.Text.RegularExpressions.Regex.Replace(
         System.IO.Path.GetFileNameWithoutExtension(FileName), @"\([^)]*\)", string.Empty).Trim();
 
+    /// <summary>CinemaVision marks 3D variants with a tag like "(3D)" or "(3DSBS)" in the file name.</summary>
+    public bool Is3D { get; } = System.Text.RegularExpressions.Regex.IsMatch(FileName, @"\([^)]*3D[^)]*\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
     public bool IsUnder(params string[] folders)
     {
         if (Folders.Length < folders.Length)
@@ -207,7 +210,7 @@ public class ContentIndex
                 continue;
             }
 
-            var relative = item.Path[root.Length..].Split('/', '\\', StringSplitOptions.RemoveEmptyEntries);
+            var relative = item.Path[root.Length..].Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             if (relative.Length == 0)
             {
                 continue;
