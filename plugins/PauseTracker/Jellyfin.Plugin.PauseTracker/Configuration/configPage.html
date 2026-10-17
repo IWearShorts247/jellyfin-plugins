@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Pause Tracker</title>
+</head>
+<body>
+    <div id="PauseTrackerConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-checkbox,emby-button">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="PauseTrackerConfigForm">
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Pause Tracker</h2>
+                        <p>Tracks how many times playback is paused and the length of each pause, and shows the totals in the video player overlay next to the time display.</p>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkInjectClientScript" />
+                        <span>Automatically inject the overlay script into the web client (index.html) at server startup</span>
+                    </label>
+                    <div class="fieldDescription">
+                        If the web folder is not writable (some Docker setups), disable this and add the following line to index.html before <code>&lt;/body&gt;</code> yourself:<br />
+                        <code>&lt;script plugin="PauseTracker" defer src="../PauseTracker/ClientScript"&gt;&lt;/script&gt;</code>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkShowExitSummary" />
+                        <span>Show a fullscreen pause summary when playback ends</span>
+                    </label>
+                    <div class="fieldDescription">
+                        After returning to the menu, shows pause count, total paused time, and each pause's length. Dismisses on click/keypress or after 15 seconds.
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtIgnoreBeforeMinutes" min="0" step="0.5" label="Don't count pauses within the first (minutes)" />
+                        <div class="fieldDescription">
+                            Pauses that begin within this many minutes from the start of the media are ignored — e.g. pausing right after prerolls until everyone is ready. Set 0 to count every pause.
+                        </div>
+                    </div>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Track these users</h3>
+                        <div class="fieldDescription">Unchecked users are not tracked at all — no overlay and no summary, on any device. Takes effect immediately on save.</div>
+                        <div id="pauseTrackerUserList"></div>
+                    </div>
+                    <br />
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Save</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginId = '7dfb5922-625a-420c-b4a4-a6d6e726977d';
+
+                document.querySelector('#PauseTrackerConfigPage').addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    Promise.all([
+                        ApiClient.getPluginConfiguration(pluginId),
+                        ApiClient.getUsers()
+                    ]).then(function (results) {
+                        var config = results[0];
+                        var users = results[1];
+                        document.querySelector('#chkInjectClientScript').checked = config.InjectClientScript !== false;
+                        document.querySelector('#chkShowExitSummary').checked = config.ShowExitSummary !== false;
+                        document.querySelector('#txtIgnoreBeforeMinutes').value =
+                            config.IgnorePausesBeforeMinutes != null ? config.IgnorePausesBeforeMinutes : 3;
+
+                        var disabled = (config.DisabledUserIds || []).map(function (s) { return s.toLowerCase(); });
+                        var list = document.querySelector('#pauseTrackerUserList');
+                        list.textContent = '';
+                        users.forEach(function (user) {
+                            var label = document.createElement('label');
+                            label.className = 'checkboxContainer';
+                            var input;
+                            try {
+                                input = document.createElement('input', { is: 'emby-checkbox' });
+                            } catch (e) {
+                                input = document.createElement('input');
+                            }
+                            input.setAttribute('is', 'emby-checkbox');
+                            input.type = 'checkbox';
+                            input.className = 'chkPauseTrackerUser';
+                            input.dataset.userid = user.Id;
+                            input.checked = disabled.indexOf(String(user.Id).toLowerCase()) === -1;
+                            var span = document.createElement('span');
+                            span.textContent = user.Name;
+                            label.appendChild(input);
+                            label.appendChild(span);
+                            list.appendChild(label);
+                        });
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                document.querySelector('#PauseTrackerConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.InjectClientScript = document.querySelector('#chkInjectClientScript').checked;
+                        config.ShowExitSummary = document.querySelector('#chkShowExitSummary').checked;
+                        var ignoreMinutes = parseFloat(document.querySelector('#txtIgnoreBeforeMinutes').value);
+                        config.IgnorePausesBeforeMinutes = isNaN(ignoreMinutes) || ignoreMinutes < 0 ? 3 : ignoreMinutes;
+                        config.DisabledUserIds = Array.prototype.filter.call(
+                            document.querySelectorAll('.chkPauseTrackerUser'),
+                            function (chk) { return !chk.checked; }
+                        ).map(function (chk) { return chk.dataset.userid; });
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>

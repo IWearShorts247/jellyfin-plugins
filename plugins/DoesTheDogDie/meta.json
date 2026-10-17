@@ -1,6 +1,6 @@
 {
   "category": "General",
-  "changelog": "Initial release: DoesTheDogDie.com lookups with caching, playback-start warnings overlay, config-page test lookup.",
+  "changelog": "1.1.0.0: per-user and per-library toggles on the settings page.",
   "description": "Shows community-sourced content warnings from DoesTheDogDie.com when playback starts.",
   "guid": "b8034a9d-1ab4-41f6-b6eb-6c6647a4e8fc",
   "imageUrl": "",
@@ -9,5 +9,5 @@
   "owner": "IWearShorts247",
   "targetAbi": "10.11.0.0",
   "timestamp": "2026-07-26T00:00:00Z",
-  "version": "1.0.0.0"
+  "version": "1.1.0.0"
 }

@@ -31,12 +31,9 @@ Showtime/
 
 ## Build / install
 
-```
-./build.sh                       # → dist/showtime_<ver>.zip + dist/manifest.json
-```
-
-Manual install: unzip into `<jellyfin data>/plugins/Showtime_<ver>/` (e.g. `/var/lib/jellyfin/plugins/` or `/config/data/plugins/` in Docker) and restart Jellyfin.
-Or host the zip somewhere the server can reach, set `SHOWTIME_ZIP_URL` before building, and add `manifest.json`'s URL under Dashboard → Plugins → Repositories.
+Install from the repository (see the [top-level README](../../README.md)), or build with `../../build.sh Showtime`
+and unzip `dist/Showtime_<ver>.zip` into `<jellyfin data>/plugins/Showtime_<ver>/` (e.g. `/var/lib/jellyfin/plugins/` or
+`/config/data/plugins/` in Docker), then restart Jellyfin.
 
 Targets Jellyfin 12.x (.NET 10, built against 12.2.0). The last 10.11 build is git tag `v0.1.0-jf10.11`.
 Note Jellyfin 12 only accepts `Authorization: MediaBrowser Token="…"` — the old `X-Emby-Token` header and `?api_key=` are gone.

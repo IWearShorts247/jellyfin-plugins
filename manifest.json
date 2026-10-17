@@ -1,0 +1,78 @@
+[
+  {
+    "guid": "b8034a9d-1ab4-41f6-b6eb-6c6647a4e8fc",
+    "name": "Does the Dog Die",
+    "description": "Shows community-sourced content warnings from DoesTheDogDie.com when playback starts.",
+    "overview": "Content warnings from DoesTheDogDie.com at the start of playback.",
+    "owner": "IWearShorts247",
+    "category": "General",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "1.1.0.0",
+        "changelog": "1.1.0.0: per-user and per-library toggles on the settings page.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/DoesTheDogDie-v1.1.0.0/DoesTheDogDie_1.1.0.0.zip",
+        "checksum": "0ccb7a244a5012ddf348d1edbc1e7117",
+        "timestamp": "2026-10-17T02:52:48Z"
+      }
+    ]
+  },
+  {
+    "guid": "96b79415-7681-4f99-a01e-0bd5c0166860",
+    "name": "Path Tagger",
+    "description": "Automatically tags items by folder path, for per-user visibility via blocked tags.",
+    "overview": "Tag items by folder path for per-profile visibility in shared libraries.",
+    "owner": "IWearShorts247",
+    "category": "General",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Initial release: folder-to-tag mappings, scheduled sweep task, immediate tagging of new items.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/PathTagger-v1.0.0.0/PathTagger_1.0.0.0.zip",
+        "checksum": "db7a7a8980d0dbd7754bc268f2e14550",
+        "timestamp": "2026-10-17T02:52:48Z"
+      }
+    ]
+  },
+  {
+    "guid": "7dfb5922-625a-420c-b4a4-a6d6e726977d",
+    "name": "Pause Tracker",
+    "description": "Tracks how many times playback is paused and for how long, and shows the totals in the video OSD.",
+    "overview": "Pause count and accumulated paused time in the player overlay.",
+    "owner": "IWearShorts247",
+    "category": "General",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "1.2.0.0",
+        "changelog": "1.2.0.0: fix summary firing on OSD auto-hide, fix duplicate OSD entries, add pre-roll grace threshold (default 3 min).",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/PauseTracker-v1.2.0.0/PauseTracker_1.2.0.0.zip",
+        "checksum": "ce59bbaa442d31c65a1fc622e9c291a9",
+        "timestamp": "2026-10-17T02:52:49Z"
+      }
+    ]
+  },
+  {
+    "guid": "7c3e5b2a-41d6-4f0e-9b8a-5d2c6e1f9a37",
+    "name": "Showtime",
+    "description": "CinemaVision-style pre-show sequences: trivia, trailers, bumpers, ratings and audio-format cards, and light cues.",
+    "overview": "A CinemaVision-style pre-show for Jellyfin",
+    "owner": "IWearShorts247",
+    "category": "General",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "0.2.2.0",
+        "changelog": "0.2.2.0: fix content folders on Windows; skip 3D clips for 2D features.",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/Showtime-v0.2.2.0/Showtime_0.2.2.0.zip",
+        "checksum": "045ab97ac6ce7666780f1a0d42cb80e8",
+        "timestamp": "2026-10-17T02:52:49Z"
+      }
+    ]
+  }
+]

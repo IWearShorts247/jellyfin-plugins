@@ -1,0 +1,13 @@
+{
+  "category": "General",
+  "changelog": "Initial release: folder-to-tag mappings, scheduled sweep task, immediate tagging of new items.",
+  "description": "Automatically tags items by folder path, for per-user visibility via blocked tags.",
+  "guid": "96b79415-7681-4f99-a01e-0bd5c0166860",
+  "imageUrl": "",
+  "name": "Path Tagger",
+  "overview": "Tag items by folder path for per-profile visibility in shared libraries.",
+  "owner": "IWearShorts247",
+  "targetAbi": "10.11.0.0",
+  "timestamp": "2026-07-26T00:00:00Z",
+  "version": "1.0.0.0"
+}

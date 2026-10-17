@@ -1,0 +1,13 @@
+{
+  "category": "General",
+  "changelog": "0.2.2.0: fix content folders on Windows; skip 3D clips for 2D features.",
+  "description": "CinemaVision-style pre-show sequences: trivia, trailers, bumpers, ratings and audio-format cards, and light cues.",
+  "guid": "7c3e5b2a-41d6-4f0e-9b8a-5d2c6e1f9a37",
+  "imageUrl": "",
+  "name": "Showtime",
+  "overview": "A CinemaVision-style pre-show for Jellyfin",
+  "owner": "IWearShorts247",
+  "targetAbi": "12.0.0.0",
+  "timestamp": "2026-10-13T01:05:37Z",
+  "version": "0.2.2.0"
+}
