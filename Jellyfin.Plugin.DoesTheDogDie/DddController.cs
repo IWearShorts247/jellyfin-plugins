@@ -1,4 +1,5 @@
 using Jellyfin.Data.Enums;
+using Jellyfin.Plugin.DoesTheDogDie.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
@@ -35,7 +36,18 @@ public class DddController : ControllerBase
             .FirstOrDefault(s => string.Equals(s.DeviceId, deviceId, StringComparison.Ordinal)
                 && s.NowPlayingItem is not null);
         var nowPlaying = session?.NowPlayingItem;
-        if (nowPlaying is null)
+        if (session is null || nowPlaying is null)
+        {
+            return NotFound();
+        }
+
+        var config = Plugin.Instance?.Configuration;
+        if (config is not null && IsDisabledForUser(config, session.UserId))
+        {
+            return NotFound();
+        }
+
+        if (config is not null && IsDisabledForLibrary(config, nowPlaying.Id))
         {
             return NotFound();
         }
@@ -67,6 +79,37 @@ public class DddController : ControllerBase
             ItemName = nowPlaying.Name,
             Lookup = result
         };
+    }
+
+    private static bool IsDisabledForUser(PluginConfiguration config, Guid userId)
+    {
+        return userId != Guid.Empty && ContainsId(config.DisabledUserIds, userId);
+    }
+
+    private bool IsDisabledForLibrary(PluginConfiguration config, Guid itemId)
+    {
+        if (config.DisabledLibraryIds.Length == 0)
+        {
+            return false;
+        }
+
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return false;
+        }
+
+        return _libraryManager.GetCollectionFolders(item)
+            .Any(folder => ContainsId(config.DisabledLibraryIds, folder.Id));
+    }
+
+    /// <summary>
+    /// Compares against IDs stored as strings by the config page, tolerating
+    /// either dashed or compact GUID formatting.
+    /// </summary>
+    private static bool ContainsId(IEnumerable<string> ids, Guid id)
+    {
+        return ids.Any(s => Guid.TryParse(s, out var parsed) && parsed == id);
     }
 
     /// <summary>Manual lookup, used by the config page's test button.</summary>

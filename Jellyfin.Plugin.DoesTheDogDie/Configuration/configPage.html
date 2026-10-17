@@ -29,6 +29,16 @@
                         <input is="emby-checkbox" type="checkbox" id="chkInjectClientScript" />
                         <span>Automatically inject the overlay script into the web client (index.html) at server startup</span>
                     </label>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Users</h3>
+                        <div class="fieldDescription">Show warnings for these users. New users are enabled automatically.</div>
+                        <div id="userToggles" class="checkboxList paperList" style="padding:.5em 1em;"></div>
+                    </div>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Libraries</h3>
+                        <div class="fieldDescription">Show warnings for items in these libraries. New libraries are enabled automatically.</div>
+                        <div id="libraryToggles" class="checkboxList paperList" style="padding:.5em 1em;"></div>
+                    </div>
                     <br />
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>Save</span>
@@ -50,15 +60,68 @@
             (function () {
                 var pluginId = 'b8034a9d-1ab4-41f6-b6eb-6c6647a4e8fc';
 
+                // GUIDs come back from different endpoints with or without dashes.
+                function normalizeId(id) {
+                    return String(id || '').replace(/-/g, '').toLowerCase();
+                }
+
+                function renderToggles(containerId, items, disabledIds) {
+                    var container = document.querySelector('#' + containerId);
+                    container.innerHTML = '';
+                    var disabled = (disabledIds || []).map(normalizeId);
+                    if (!items.length) {
+                        container.textContent = 'None found.';
+                        return;
+                    }
+                    items.forEach(function (item) {
+                        var label = document.createElement('label');
+                        label.className = 'checkboxContainer';
+                        var input = document.createElement('input');
+                        input.setAttribute('is', 'emby-checkbox');
+                        input.type = 'checkbox';
+                        input.dataset.id = item.id;
+                        input.checked = disabled.indexOf(normalizeId(item.id)) === -1;
+                        var span = document.createElement('span');
+                        span.textContent = item.name;
+                        label.appendChild(input);
+                        label.appendChild(span);
+                        container.appendChild(label);
+                    });
+                }
+
+                // Returns the IDs of the unchecked boxes in a toggle list.
+                function collectDisabled(containerId) {
+                    return Array.prototype.slice.call(
+                        document.querySelectorAll('#' + containerId + ' input[type=checkbox]'))
+                        .filter(function (cb) { return !cb.checked; })
+                        .map(function (cb) { return cb.dataset.id; });
+                }
+
                 document.querySelector('#DdtdConfigPage').addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
-                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    Promise.all([
+                        ApiClient.getPluginConfiguration(pluginId),
+                        ApiClient.getUsers(),
+                        ApiClient.getVirtualFolders()
+                    ]).then(function (results) {
+                        var config = results[0];
+                        var users = results[1] || [];
+                        var libraries = results[2] || [];
                         document.querySelector('#txtApiKey').value = config.ApiKey || '';
                         document.querySelector('#txtOverlaySeconds').value = config.OverlaySeconds || 12;
                         document.querySelector('#txtMinYesVotes').value = config.MinYesVotes || 3;
                         document.querySelector('#txtMaxTopics').value = config.MaxTopics || 8;
                         document.querySelector('#chkInjectClientScript').checked = config.InjectClientScript !== false;
+                        renderToggles('userToggles', users.map(function (u) {
+                            return { id: u.Id, name: u.Name };
+                        }), config.DisabledUserIds);
+                        renderToggles('libraryToggles', libraries.map(function (l) {
+                            return { id: l.ItemId, name: l.Name };
+                        }), config.DisabledLibraryIds);
                         Dashboard.hideLoadingMsg();
+                    }).catch(function () {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert('Failed to load plugin settings.');
                     });
                 });
 
@@ -71,6 +134,8 @@
                         config.MinYesVotes = parseInt(document.querySelector('#txtMinYesVotes').value, 10) || 3;
                         config.MaxTopics = parseInt(document.querySelector('#txtMaxTopics').value, 10) || 8;
                         config.InjectClientScript = document.querySelector('#chkInjectClientScript').checked;
+                        config.DisabledUserIds = collectDisabled('userToggles');
+                        config.DisabledLibraryIds = collectDisabled('libraryToggles');
                         ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

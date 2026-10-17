@@ -31,4 +31,17 @@ public class PluginConfiguration : BasePluginConfiguration
     /// into jellyfin-web's index.html at startup.
     /// </summary>
     public bool InjectClientScript { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the IDs of users for whom warnings are turned off.
+    /// Users not listed here (including newly created ones) get warnings.
+    /// </summary>
+    public string[] DisabledUserIds { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Gets or sets the IDs of libraries (top-level collection folders) for
+    /// which warnings are turned off. Libraries not listed here (including
+    /// newly added ones) get warnings.
+    /// </summary>
+    public string[] DisabledLibraryIds { get; set; } = Array.Empty<string>();
 }
