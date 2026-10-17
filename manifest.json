@@ -13,8 +13,8 @@
         "changelog": "1.1.0.0: per-user and per-library toggles on the settings page.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/DoesTheDogDie-v1.1.0.0/DoesTheDogDie_1.1.0.0.zip",
-        "checksum": "0ccb7a244a5012ddf348d1edbc1e7117",
-        "timestamp": "2026-10-17T02:52:48Z"
+        "checksum": "377dc53ae1236c77209775019a518314",
+        "timestamp": "2026-10-17T02:53:13Z"
       }
     ]
   },
@@ -32,8 +32,8 @@
         "changelog": "Initial release: folder-to-tag mappings, scheduled sweep task, immediate tagging of new items.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/PathTagger-v1.0.0.0/PathTagger_1.0.0.0.zip",
-        "checksum": "db7a7a8980d0dbd7754bc268f2e14550",
-        "timestamp": "2026-10-17T02:52:48Z"
+        "checksum": "f08da3b6c76febaaf1286e68627e8f70",
+        "timestamp": "2026-10-17T02:53:14Z"
       }
     ]
   },
@@ -51,8 +51,8 @@
         "changelog": "1.2.0.0: fix summary firing on OSD auto-hide, fix duplicate OSD entries, add pre-roll grace threshold (default 3 min).",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/PauseTracker-v1.2.0.0/PauseTracker_1.2.0.0.zip",
-        "checksum": "ce59bbaa442d31c65a1fc622e9c291a9",
-        "timestamp": "2026-10-17T02:52:49Z"
+        "checksum": "1d8de5d04a473fbc518115d1a2b116f5",
+        "timestamp": "2026-10-17T02:53:16Z"
       }
     ]
   },
@@ -70,8 +70,8 @@
         "changelog": "0.2.2.0: fix content folders on Windows; skip 3D clips for 2D features.",
         "targetAbi": "12.0.0.0",
         "sourceUrl": "https://github.com/IWearShorts247/jellyfin-plugins/releases/download/Showtime-v0.2.2.0/Showtime_0.2.2.0.zip",
-        "checksum": "045ab97ac6ce7666780f1a0d42cb80e8",
-        "timestamp": "2026-10-17T02:52:49Z"
+        "checksum": "11dd8be7ace37a7f4b99d3c01b7365d8",
+        "timestamp": "2026-10-17T02:53:17Z"
       }
     ]
   }
