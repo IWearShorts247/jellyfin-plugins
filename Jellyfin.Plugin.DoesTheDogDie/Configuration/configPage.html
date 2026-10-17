@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Does the Dog Die</title>
+</head>
+<body>
+    <div id="DdtdConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-checkbox,emby-button">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="DdtdConfigForm">
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Does the Dog Die</h2>
+                        <p>Shows community-sourced content warnings from <a href="https://www.doesthedogdie.com" target="_blank" rel="noopener">DoesTheDogDie.com</a> at the start of each movie and episode (episodes use the show's ratings). Get a free API key: sign in on the site, open your profile, and copy the API key shown there.</p>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtApiKey" label="DoesTheDogDie API key" autocomplete="off" />
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtOverlaySeconds" min="3" step="1" label="Overlay duration (seconds)" />
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtMinYesVotes" min="1" step="1" label="Minimum 'yes' votes to show a warning" />
+                        <div class="fieldDescription">Topics are only shown when yes votes outnumber no votes AND meet this minimum.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtMaxTopics" min="1" step="1" label="Maximum warnings shown per title" />
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkInjectClientScript" />
+                        <span>Automatically inject the overlay script into the web client (index.html) at server startup</span>
+                    </label>
+                    <br />
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Save</span>
+                    </button>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Test lookup</h3>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtTestTitle" label="Title" />
+                        </div>
+                        <button is="emby-button" type="button" id="btnTestLookup" class="raised block">
+                            <span>Test</span>
+                        </button>
+                        <pre id="testResult" style="white-space:pre-wrap;"></pre>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginId = 'b8034a9d-1ab4-41f6-b6eb-6c6647a4e8fc';
+
+                document.querySelector('#DdtdConfigPage').addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        document.querySelector('#txtApiKey').value = config.ApiKey || '';
+                        document.querySelector('#txtOverlaySeconds').value = config.OverlaySeconds || 12;
+                        document.querySelector('#txtMinYesVotes').value = config.MinYesVotes || 3;
+                        document.querySelector('#txtMaxTopics').value = config.MaxTopics || 8;
+                        document.querySelector('#chkInjectClientScript').checked = config.InjectClientScript !== false;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                document.querySelector('#DdtdConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.ApiKey = document.querySelector('#txtApiKey').value.trim();
+                        config.OverlaySeconds = parseInt(document.querySelector('#txtOverlaySeconds').value, 10) || 12;
+                        config.MinYesVotes = parseInt(document.querySelector('#txtMinYesVotes').value, 10) || 3;
+                        config.MaxTopics = parseInt(document.querySelector('#txtMaxTopics').value, 10) || 8;
+                        config.InjectClientScript = document.querySelector('#chkInjectClientScript').checked;
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+
+                document.querySelector('#btnTestLookup').addEventListener('click', function () {
+                    var title = document.querySelector('#txtTestTitle').value.trim();
+                    var out = document.querySelector('#testResult');
+                    if (!title) {
+                        out.textContent = 'Enter a title first.';
+                        return;
+                    }
+                    out.textContent = 'Looking up…';
+                    ApiClient.ajax({
+                        type: 'GET',
+                        url: ApiClient.getUrl('DoesTheDogDie/Lookup', { title: title }),
+                        dataType: 'json'
+                    }).then(function (r) {
+                        var lines = ['Matched: ' + r.MatchedName + (r.MatchedYear ? ' (' + r.MatchedYear + ')' : ''), r.Url, ''];
+                        (r.Warnings || []).forEach(function (w) {
+                            lines.push(w.Name + '  (' + w.YesVotes + ' yes / ' + w.NoVotes + ' no)');
+                        });
+                        if (!r.Warnings || !r.Warnings.length) {
+                            lines.push('No warnings passed the vote thresholds.');
+                        }
+                        out.textContent = lines.join('\n');
+                    }, function (err) {
+                        out.textContent = 'Lookup failed (' + (err && err.status ? err.status : '?') + '). Check the API key (save it first!) and the server log.';
+                    });
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>
