@@ -20,9 +20,9 @@ Jellyfin only lists versions whose `targetAbi` is compatible with your server.
 
 | Plugin | Jellyfin | What it does |
 | --- | --- | --- |
-| [Does the Dog Die](plugins/DoesTheDogDie) | 10.11+ | Content warnings from DoesTheDogDie.com when playback starts, with per-user and per-library toggles. |
-| [Path Tagger](plugins/PathTagger) | 10.11+ | Tags items by folder path so shared libraries can be filtered per user with blocked tags. |
-| [Pause Tracker](plugins/PauseTracker) | 10.11+ | Counts pauses and accumulated paused time, shown in the video OSD. |
+| [Does the Dog Die](plugins/DoesTheDogDie) | 12.x | Content warnings from DoesTheDogDie.com when playback starts, with per-user and per-library toggles. |
+| [Path Tagger](plugins/PathTagger) | 12.x | Tags items by folder path so shared libraries can be filtered per user with blocked tags. |
+| [Pause Tracker](plugins/PauseTracker) | 12.x | Counts pauses and accumulated paused time, shown in the video OSD. |
 | [Showtime](plugins/Showtime) | 12.x | CinemaVision-style pre-show: trivia reels, trailers, bumpers, rating and audio-format cards, light cues. |
 
 ## Layout
@@ -39,7 +39,7 @@ manifest.json               the repository index Jellyfin reads
 
 ## Building and releasing
 
-Requires the .NET 10 SDK (it also builds the .NET 9 plugins). The version of a
+Requires the .NET 10 SDK. The version of a
 plugin is its csproj `<AssemblyVersion>`.
 
 ```bash

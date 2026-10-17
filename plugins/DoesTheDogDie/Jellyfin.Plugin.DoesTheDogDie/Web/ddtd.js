@@ -89,8 +89,7 @@
         var url = apiClient.getUrl('DoesTheDogDie/Current', { deviceId: apiClient.deviceId() });
         fetch(url, {
             headers: {
-                'Authorization': 'MediaBrowser Token="' + apiClient.accessToken() + '"',
-                'X-Emby-Token': apiClient.accessToken()
+                'Authorization': 'MediaBrowser Token="' + apiClient.accessToken() + '"'
             }
         }).then(function (res) {
             return res.ok ? res.json() : null;

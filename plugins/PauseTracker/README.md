@@ -1,6 +1,6 @@
 # Jellyfin Pause Tracker
 
-A Jellyfin 10.11 plugin that tracks how many times playback is paused and the
+A Jellyfin 12.x plugin that tracks how many times playback is paused and the
 length of each pause interval, and shows the pause count plus accumulated paused
 time for the current media in the video player overlay (next to the time display):
 

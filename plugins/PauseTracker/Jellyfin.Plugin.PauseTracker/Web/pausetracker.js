@@ -137,8 +137,7 @@
         var url = apiClient.getUrl('PauseTracker/Stats', { deviceId: apiClient.deviceId() });
         return fetch(url, {
             headers: {
-                'Authorization': 'MediaBrowser Token="' + apiClient.accessToken() + '"',
-                'X-Emby-Token': apiClient.accessToken()
+                'Authorization': 'MediaBrowser Token="' + apiClient.accessToken() + '"'
             }
         }).then(function (res) {
             return res.ok ? res.json() : null;

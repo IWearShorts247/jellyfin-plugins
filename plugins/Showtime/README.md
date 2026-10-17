@@ -35,7 +35,7 @@ Install from the repository (see the [top-level README](../../README.md)), or bu
 and unzip `dist/Showtime_<ver>.zip` into `<jellyfin data>/plugins/Showtime_<ver>/` (e.g. `/var/lib/jellyfin/plugins/` or
 `/config/data/plugins/` in Docker), then restart Jellyfin.
 
-Targets Jellyfin 12.x (.NET 10, built against 12.2.0). The last 10.11 build is git tag `v0.1.0-jf10.11`.
+Targets Jellyfin 12.x (.NET 10, built against 12.2.0). The last 10.11 build is git tag `Showtime-v0.1.0-jf10.11`.
 Note Jellyfin 12 only accepts `Authorization: MediaBrowser Token="…"` — the old `X-Emby-Token` header and `?api_key=` are gone.
 
 ## Limits
