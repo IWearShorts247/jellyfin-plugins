@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Progress Eraser</title>
+</head>
+<body>
+    <div id="ProgressEraserConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-checkbox,emby-button">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="ProgressEraserConfigForm">
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Progress Eraser</h2>
+                        <p>Adds an eraser button next to <em>Favorite</em> and <em>Mark Played</em> on media cards, and to the item page. Clicking it clears your playback position for that item, removing it from <em>Continue Watching</em>. Played state and play count are not changed. On a series, season or collection it resets every in-progress episode inside.</p>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkShowOnAllCards" />
+                        <span>Show the eraser on every card's hover menu (default: only cards with a progress bar)</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkShowOnDetailPage" />
+                        <span>Show the eraser in the item page button row when the item is resumable</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkInjectClientScript" />
+                        <span>Automatically inject the client script into the web client (index.html) at server startup</span>
+                    </label>
+                    <div class="fieldDescription">Changes to the first two options take effect after a hard refresh of the web client. The injection option takes effect after a server restart.</div>
+                    <br />
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Save</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginId = 'e5fcf8d4-e7d4-46b0-9333-0e6afa02f589';
+
+                document.querySelector('#ProgressEraserConfigPage').addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        document.querySelector('#chkShowOnAllCards').checked = config.ShowOnAllCards === true;
+                        document.querySelector('#chkShowOnDetailPage').checked = config.ShowOnDetailPage !== false;
+                        document.querySelector('#chkInjectClientScript').checked = config.InjectClientScript !== false;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                document.querySelector('#ProgressEraserConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.ShowOnAllCards = document.querySelector('#chkShowOnAllCards').checked;
+                        config.ShowOnDetailPage = document.querySelector('#chkShowOnDetailPage').checked;
+                        config.InjectClientScript = document.querySelector('#chkInjectClientScript').checked;
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>

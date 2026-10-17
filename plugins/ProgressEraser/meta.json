@@ -1,0 +1,13 @@
+{
+  "category": "General",
+  "changelog": "1.0.0.0: initial release.",
+  "description": "Eraser button on media cards that resets watch progress and removes the item from Continue Watching.",
+  "guid": "e5fcf8d4-e7d4-46b0-9333-0e6afa02f589",
+  "imageUrl": "",
+  "name": "Progress Eraser",
+  "overview": "One-click reset of watch progress from the card hover menu.",
+  "owner": "IWearShorts247",
+  "targetAbi": "12.0.0.0",
+  "timestamp": "2026-10-17T00:00:00Z",
+  "version": "1.0.0.0"
+}
