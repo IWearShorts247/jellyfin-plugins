@@ -20,11 +20,34 @@
                         <input is="emby-checkbox" type="checkbox" id="chkShowOnDetailPage" />
                         <span>Show the eraser in the item page button row when the item is resumable</span>
                     </label>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Next Up</h3>
+                        <p>Each user can hide shows they have stopped watching from <em>Next Up</em>: an eye button on Next Up cards and on series, season and episode pages. Hidden shows are removed from the server's Next Up results, so every client is covered.</p>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkFilterNextUp" />
+                        <span>Remove hidden shows from Next Up on the server (all clients)</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkNextUpButton" />
+                        <span>Show the hide/show buttons in the web client</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkUnhideOnPlayback" />
+                        <span>Put a show back into Next Up when the user plays one of its episodes</span>
+                    </label>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Hidden shows</h3>
+                        <div id="hiddenList" class="paperList" style="padding:.5em 1em;"></div>
+                    </div>
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Web client</h3>
+                    </div>
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="chkInjectClientScript" />
                         <span>Automatically inject the client script into the web client (index.html) at server startup</span>
                     </label>
-                    <div class="fieldDescription">Changes to the first two options take effect after a hard refresh of the web client. The injection option takes effect after a server restart.</div>
+                    <div class="fieldDescription">Button options take effect after a hard refresh of the web client. The injection option takes effect after a server restart.</div>
                     <br />
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>Save</span>
@@ -36,12 +59,65 @@
             (function () {
                 var pluginId = 'e5fcf8d4-e7d4-46b0-9333-0e6afa02f589';
 
+                function loadHidden() {
+                    var list = document.querySelector('#hiddenList');
+                    ApiClient.ajax({
+                        type: 'GET',
+                        url: ApiClient.getUrl('ProgressEraser/NextUp/Hidden/All'),
+                        dataType: 'json'
+                    }).then(function (rows) {
+                        list.innerHTML = '';
+                        if (!rows || !rows.length) {
+                            list.textContent = 'No shows are hidden from Next Up.';
+                            return;
+                        }
+                        rows.sort(function (a, b) {
+                            return (a.UserName + a.SeriesName).localeCompare(b.UserName + b.SeriesName);
+                        });
+                        rows.forEach(function (row) {
+                            var item = document.createElement('div');
+                            item.className = 'listItem';
+                            var body = document.createElement('div');
+                            body.className = 'listItemBody';
+                            var title = document.createElement('div');
+                            title.className = 'listItemBodyText';
+                            title.textContent = row.SeriesName;
+                            var sub = document.createElement('div');
+                            sub.className = 'listItemBodyText secondary';
+                            sub.textContent = row.UserName + ' · hidden ' + new Date(row.HiddenAt).toLocaleDateString();
+                            body.appendChild(title);
+                            body.appendChild(sub);
+                            var btn = document.createElement('button');
+                            btn.setAttribute('is', 'emby-button');
+                            btn.type = 'button';
+                            btn.className = 'raised button-cancel';
+                            btn.textContent = 'Unhide';
+                            btn.addEventListener('click', function () {
+                                btn.disabled = true;
+                                ApiClient.ajax({
+                                    type: 'DELETE',
+                                    url: ApiClient.getUrl('ProgressEraser/NextUp/Hidden/' + row.UserId + '/' + row.SeriesId)
+                                }).then(loadHidden, loadHidden);
+                            });
+                            item.appendChild(body);
+                            item.appendChild(btn);
+                            list.appendChild(item);
+                        });
+                    }, function () {
+                        list.textContent = 'Could not load the hidden list.';
+                    });
+                }
+
                 document.querySelector('#ProgressEraserConfigPage').addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                         document.querySelector('#chkShowOnAllCards').checked = config.ShowOnAllCards === true;
                         document.querySelector('#chkShowOnDetailPage').checked = config.ShowOnDetailPage !== false;
                         document.querySelector('#chkInjectClientScript').checked = config.InjectClientScript !== false;
+                        document.querySelector('#chkFilterNextUp').checked = config.FilterNextUp !== false;
+                        document.querySelector('#chkNextUpButton').checked = config.NextUpButton !== false;
+                        document.querySelector('#chkUnhideOnPlayback').checked = config.UnhideOnPlayback !== false;
+                        loadHidden();
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -53,6 +129,9 @@
                         config.ShowOnAllCards = document.querySelector('#chkShowOnAllCards').checked;
                         config.ShowOnDetailPage = document.querySelector('#chkShowOnDetailPage').checked;
                         config.InjectClientScript = document.querySelector('#chkInjectClientScript').checked;
+                        config.FilterNextUp = document.querySelector('#chkFilterNextUp').checked;
+                        config.NextUpButton = document.querySelector('#chkNextUpButton').checked;
+                        config.UnhideOnPlayback = document.querySelector('#chkUnhideOnPlayback').checked;
                         ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

@@ -24,7 +24,7 @@ public class Plugin : BasePlugin<Configuration.PluginConfiguration>, IHasWebPage
     public override Guid Id => Guid.Parse("e5fcf8d4-e7d4-46b0-9333-0e6afa02f589");
 
     public override string Description =>
-        "Eraser button on media cards that resets watch progress and removes the item from Continue Watching.";
+        "Eraser button that resets watch progress, and per-user hiding of shows from Next Up.";
 
     public IEnumerable<PluginPageInfo> GetPages()
     {
